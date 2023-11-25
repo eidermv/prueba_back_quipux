@@ -4,7 +4,6 @@ import com.example.back.auth.domain.model.Respuesta;
 import com.example.back.auth.domain.model.UsuariosLogin;
 import com.example.back.auth.domain.repository.UsuariosLoginRepo;
 import com.example.back.shared.application.ValidacionJWT;
-import com.example.back.shared.application.query.Query;
 import io.vertx.core.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.util.Base64;
+import java.util.Objects;
 
 @Component
 public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
@@ -48,8 +47,8 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
 
                         String finalJwtIdCode = jwtIdCode;
 
-                        int idUsuario = repo.comprobarUsuarioContrasena(username, password);
-                        if (idUsuario == 0) {
+                        Integer idUsuario = repo.comprobarUsuarioContrasena(username, password);
+                        if (Objects.isNull(idUsuario)) {
                             respuesta = new Respuesta(401, "Usuario o contrasena incorrecto");
                             return ResponseEntity.status(401).body(respuesta.toString());
                         } else {
@@ -96,12 +95,32 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
         }
     }
 
+    @Component
     public static final class ComprobarUsuarioContraBuilder {
         private String auth;
         private UsuariosLoginRepo repo;
 
+        private static String JWT_ISSUER;
+        private static String JWT_ID_HEADER;
+        private static ValidacionJWT jwt;
+
         public ComprobarUsuarioContraBuilder() {
 
+        }
+
+        @Autowired
+        private void setJWT_ID_HEADER(@Value("${property.JWT_ID_HEADER}") String JWT_ID_HEADER) {
+            this.JWT_ID_HEADER = JWT_ID_HEADER;
+        }
+
+        @Autowired
+        private void setJWT_ISSUER(@Value("${property.JWT_ISSUER}") String JWT_ISSUER) {
+            this.JWT_ISSUER = JWT_ISSUER;
+        }
+
+        @Autowired
+        private void setJwt(ValidacionJWT jwt) {
+            this.jwt = jwt;
         }
 
         public static ComprobarUsuarioContraBuilder aComprobarUsuarioContra() {
@@ -120,8 +139,11 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
 
         public ComprobarUsuarioContra build() {
             ComprobarUsuarioContra comprobarUsuarioContra = new ComprobarUsuarioContra();
+            comprobarUsuarioContra.JWT_ID_HEADER = this.JWT_ID_HEADER;
+            comprobarUsuarioContra.JWT_ISSUER = this.JWT_ISSUER;
             comprobarUsuarioContra.auth = this.auth;
             comprobarUsuarioContra.repo = this.repo;
+            comprobarUsuarioContra.jwt = this.jwt;
             return comprobarUsuarioContra;
         }
     }
