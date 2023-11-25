@@ -10,29 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.Base64;
 
 @Component
-public class ComprobarUsuarioContra<T> implements Query<ResponseEntity> {
-    private String auth;
-    private UsuariosLoginRepo repo;
+public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
 
-    Base64.Decoder b64dec = Base64.getDecoder();
-    private final String JWT_ISSUER;
-    private final String JWT_ID_HEADER;
-    @Autowired
-    private ValidacionJWT jwt;
-
-    private ComprobarUsuarioContra(
-            @Value("${JWT_ID_HEADER}") String JWT_ID_HEADER,
-            @Value("${JWT_ISSUER}") String JWT_ISSUER
-    ) {
-        this.JWT_ISSUER=JWT_ISSUER;
-        this.JWT_ID_HEADER=JWT_ID_HEADER;
+    private ComprobarUsuarioContra() {
     }
 
     @Override
@@ -63,25 +49,25 @@ public class ComprobarUsuarioContra<T> implements Query<ResponseEntity> {
                         String finalJwtIdCode = jwtIdCode;
 
                         int idUsuario = repo.comprobarUsuarioContrasena(username, password);
-                            if (idUsuario == 0) {
-                                respuesta = new Respuesta(401, "Usuario o contrasena incorrecto");
-                                return ResponseEntity.status(401).body(respuesta.toString());
-                            } else {
-                                int lifespan = 129600000;
-                                UsuariosLogin usuariosLogin = new UsuariosLogin();
-                                usuariosLogin.setIdUsuario(idUsuario);
-                                usuariosLogin.setUsuario(username);
-                                usuariosLogin.setContrasena(password);
-                                String payload = usuariosLogin.toString();
-                                JsonObject aux = new JsonObject();
-                                String jwtStr = jwt.createJWT("Quipux-Web", finalJwtIdCode, JWT_ISSUER, payload,
-                                        "Prueba", lifespan);
-                                aux.put("mensaje", "Token privado generado");
-                                aux.put("key", jwtStr);
-                                aux.put("error", 0);
+                        if (idUsuario == 0) {
+                            respuesta = new Respuesta(401, "Usuario o contrasena incorrecto");
+                            return ResponseEntity.status(401).body(respuesta.toString());
+                        } else {
+                            int lifespan = 129600000;
+                            UsuariosLogin usuariosLogin = new UsuariosLogin();
+                            usuariosLogin.setIdUsuario(idUsuario);
+                            usuariosLogin.setUsuario(username);
+                            usuariosLogin.setContrasena(password);
+                            String payload = usuariosLogin.toString();
+                            JsonObject aux = new JsonObject();
+                            String jwtStr = jwt.createJWT("Quipux-Web", finalJwtIdCode, JWT_ISSUER, payload,
+                                    "Prueba", lifespan);
+                            aux.put("mensaje", "Token privado generado");
+                            aux.put("key", jwtStr);
+                            aux.put("error", 0);
 
-                                return ResponseEntity.status(401).body(aux.toString());
-                            }
+                            return ResponseEntity.status(401).body(aux.toString());
+                        }
 
 
                     } else {
@@ -107,6 +93,36 @@ public class ComprobarUsuarioContra<T> implements Query<ResponseEntity> {
             return ResponseEntity.status(401).body(respuesta.toString());
 
 
+        }
+    }
+
+    public static final class ComprobarUsuarioContraBuilder {
+        private String auth;
+        private UsuariosLoginRepo repo;
+
+        public ComprobarUsuarioContraBuilder() {
+
+        }
+
+        public static ComprobarUsuarioContraBuilder aComprobarUsuarioContra() {
+            return new ComprobarUsuarioContraBuilder();
+        }
+
+        public ComprobarUsuarioContraBuilder withAuth(String auth) {
+            this.auth = auth;
+            return this;
+        }
+
+        public ComprobarUsuarioContraBuilder withRepo(UsuariosLoginRepo repo) {
+            this.repo = repo;
+            return this;
+        }
+
+        public ComprobarUsuarioContra build() {
+            ComprobarUsuarioContra comprobarUsuarioContra = new ComprobarUsuarioContra();
+            comprobarUsuarioContra.auth = this.auth;
+            comprobarUsuarioContra.repo = this.repo;
+            return comprobarUsuarioContra;
         }
     }
 }
