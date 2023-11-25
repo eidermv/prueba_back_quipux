@@ -3,6 +3,7 @@ package com.example.back.lista.infrastructure.rest.controller;
 import com.example.back.auth.application.query.ValidacionAuth;
 import com.example.back.lista.application.command.*;
 import com.example.back.lista.application.query.BuscarPorNombreLista;
+import com.example.back.lista.application.query.ConsultarGeneroSpotify;
 import com.example.back.lista.application.query.ListarLista;
 import com.example.back.lista.infrastructure.db.entity.CancionEnt;
 import com.example.back.lista.infrastructure.db.entity.ListaCancionEnt;
@@ -46,8 +47,9 @@ public class ListaController {
     private static GuardarLista<ListaEnt> guardarLista;
     private static GuardarListaCancion<ListaCancionEnt> guardarListaCancion;
     private static GuardarCancion<CancionEnt> guardarCancion;
-    private static EliminarPorNombreLista<ListaEnt> eliminarPorNombreLista;
     private static EliminarPorIdLista eliminarPorIdLista;
+    @Autowired
+    private ConsultarGeneroSpotify consultarGeneroSpotify;
 
     @Qualifier("ListaMapImpl")
     @Autowired
@@ -55,6 +57,16 @@ public class ListaController {
 
     @Autowired
     private ValidacionAuth validacionAuth;
+
+    @GetMapping(value = "/generos", produces = "application/json")
+    public Mono<ResponseEntity> listarGeneros(@RequestHeader("Authorization") String auth) {
+        validacionAuth.setAuth(auth);
+        ResponseEntity responseEntity = validacionAuth.execute();
+        if (responseEntity.getStatusCode().value() == 200) {
+            return consultarGeneroSpotify.execute();
+        } else
+            return Mono.just(responseEntity);
+    }
 
     @GetMapping(value = "", produces = "application/json")
     public Mono<ResponseEntity> listarTodos(@RequestHeader("Authorization") String auth) {
