@@ -1,19 +1,23 @@
 package com.example.back.lista.application.query;
 
-import com.example.back.lista.domain.model.Lista;
 import com.example.back.lista.domain.repository.ListaRepo;
-import com.example.back.shared.application.command.Command;
 import com.example.back.shared.application.query.Query;
+import org.springframework.stereotype.Component;
 
-public class BuscarPorNombreLista implements Query<Lista> {
+@Component
+public class BuscarPorNombreLista<T> implements Query<T> {
 
     private ListaRepo repo;
     private String data;
 
-    @Override
-    public Lista execute() {
-        return (Lista) repo.buscarPorNombre(data);
+    private BuscarPorNombreLista() {
     }
+
+    @Override
+    public T execute() {
+        return (T) repo.buscarPorNombre(data);
+    }
+
 
     public static final class BuscarPorNombreListaBuilder {
         private ListaRepo repo;

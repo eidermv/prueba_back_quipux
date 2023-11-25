@@ -2,15 +2,21 @@ package com.example.back.lista.application.query;
 
 import com.example.back.lista.domain.repository.ListaRepo;
 import com.example.back.shared.application.query.Query;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-public class ListarLista implements Query<List> {
+@Component
+public class ListarLista<T> implements Query<List> {
 
-    private ListaRepo repo;
+    private static ListaRepo repo;
+
+    private ListarLista(ListaRepo repo) {
+        this.repo = repo;
+    }
 
     @Override
-    public List execute() {
+    public List<T> execute() {
         return repo.findAll();
     }
 
@@ -30,9 +36,7 @@ public class ListarLista implements Query<List> {
         }
 
         public ListarLista build() {
-            ListarLista listarLista = new ListarLista();
-            listarLista.repo = this.repo;
-            return listarLista;
+            return new ListarLista(repo);
         }
     }
 }

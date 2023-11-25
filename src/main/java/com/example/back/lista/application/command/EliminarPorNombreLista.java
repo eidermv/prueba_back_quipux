@@ -2,47 +2,55 @@ package com.example.back.lista.application.command;
 
 import com.example.back.lista.domain.repository.ListaRepo;
 import com.example.back.shared.application.command.Command;
+import org.springframework.stereotype.Component;
 
-public class EliminarPorNombreLista implements Command<Boolean> {
+import java.util.Objects;
+
+@Component
+public class EliminarPorNombreLista<T> implements Command<T> {
 
     private ListaRepo repo;
     private String data;
 
-    @Override
-    public Boolean execute() {
-        if (repo.existePorNombre(data)>0) {
-            repo.eliminarPorNombre(data);
-            return true;
-        }
-        return false;
+    private EliminarPorNombreLista() {
     }
 
-    public final class GuardarListaBuilder {
+    @Override
+    public T execute() {
+        T valor = (T) repo.buscarPorNombre(data);
+        if (!Objects.isNull(valor)) {
+            repo.eliminarPorNombre(data);
+            return valor;
+        }
+        return null;
+    }
+
+    public static final class EliminarPorNombreListaBuilder {
         private ListaRepo repo;
         private String data;
 
-        private GuardarListaBuilder() {
+        private EliminarPorNombreListaBuilder() {
         }
 
-        public GuardarListaBuilder aGuardarLista() {
-            return new GuardarListaBuilder();
+        public static EliminarPorNombreListaBuilder anEliminarPorNombreLista() {
+            return new EliminarPorNombreListaBuilder();
         }
 
-        public GuardarListaBuilder withRepo(ListaRepo repo) {
+        public EliminarPorNombreListaBuilder withRepo(ListaRepo repo) {
             this.repo = repo;
             return this;
         }
 
-        public GuardarListaBuilder withData(String data) {
+        public EliminarPorNombreListaBuilder withData(String data) {
             this.data = data;
             return this;
         }
 
         public EliminarPorNombreLista build() {
-            EliminarPorNombreLista guardarLista = new EliminarPorNombreLista();
-            guardarLista.data = this.data;
-            guardarLista.repo = this.repo;
-            return guardarLista;
+            EliminarPorNombreLista eliminarPorNombreLista = new EliminarPorNombreLista();
+            eliminarPorNombreLista.data = this.data;
+            eliminarPorNombreLista.repo = this.repo;
+            return eliminarPorNombreLista;
         }
     }
 }

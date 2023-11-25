@@ -1,9 +1,10 @@
 package com.example.back.lista.application.command;
 
-import com.example.back.lista.domain.model.Lista;
 import com.example.back.lista.domain.repository.ListaRepo;
 import com.example.back.shared.application.command.Command;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GuardarLista<T> implements Command<T> {
 
     private ListaRepo repo;
@@ -14,14 +15,18 @@ public class GuardarLista<T> implements Command<T> {
         return (T) repo.save(data);
     }
 
-    public final class GuardarListaBuilder {
+    private GuardarLista() {
+    }
+
+
+    public static final class GuardarListaBuilder<T> {
         private ListaRepo repo;
         private T data;
 
         private GuardarListaBuilder() {
         }
 
-        public GuardarListaBuilder aGuardarLista() {
+        public static GuardarListaBuilder aGuardarLista() {
             return new GuardarListaBuilder();
         }
 
