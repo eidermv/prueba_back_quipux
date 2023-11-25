@@ -9,11 +9,14 @@ import lombok.Setter;
 @Getter
 @Entity
 @Table(name = "USUARIOS_LOGIN")
-public class UsuariosLoginEnt extends UsuariosLogin {
+public class UsuariosLoginEnt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id_usuario", nullable = false)
     private int idUsuario;
+
+    private String usuario;
+    private String contrasena;
 
 }
