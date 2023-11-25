@@ -1,6 +1,7 @@
 package com.example.back.auth.application.query;
 
 import com.example.back.auth.domain.model.Respuesta;
+import com.example.back.auth.infrastructure.db.entity.UsuariosLoginEnt;
 import com.example.back.shared.application.query.Query;
 import io.jsonwebtoken.Claims;
 import io.vertx.core.json.JsonObject;
