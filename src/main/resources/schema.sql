@@ -24,7 +24,7 @@ CREATE TABLE LISTA (
 
 CREATE TABLE LISTA_CANCION (
                                       ID_LISTA_CANCION INTEGER NOT NULL AUTO_INCREMENT,
-                                      ID_LISTA INTEGER NOT NULL AUTO_INCREMENT,
+                                      ID_LISTA INTEGER NOT NULL,
                                       ID_CANCION INTEGER NOT NULL,
                                       CONSTRAINT LISTA_CANCION_PK PRIMARY KEY (ID_LISTA_CANCION),
                                       CONSTRAINT LISTA_CANCION_FK FOREIGN KEY (ID_LISTA) REFERENCES PUBLIC.LISTA(ID_LISTA),
