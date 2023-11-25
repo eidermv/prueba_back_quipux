@@ -1,15 +1,43 @@
 package com.example.back.auth.application.query;
 
 import com.example.back.auth.domain.model.Respuesta;
-import com.example.back.auth.infrastructure.db.entity.UsuariosLoginEnt;
-import com.example.back.shared.application.query.Query;
+import com.example.back.shared.application.ValidacionJWT;
 import io.jsonwebtoken.Claims;
 import io.vertx.core.json.JsonObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
-public class ValidacionAuth extends QueryAuth<ResponseEntity> {
+@Component
+public final class ValidacionAuth extends QueryAuth<ResponseEntity> {
 
-    private ValidacionAuth() {}
+    String JWT_ISSUER;
+    String JWT_ID_HEADER;
+    ValidacionJWT jwt;
+
+    private ValidacionAuth() {
+    }
+
+    @Autowired
+    private void setJWT_ID_HEADER(@Value("${property.JWT_ID_HEADER}") String JWT_ID_HEADER) {
+        this.JWT_ID_HEADER = JWT_ID_HEADER;
+    }
+
+    @Autowired
+    private void setJWT_ISSUER(@Value("${property.JWT_ISSUER}") String JWT_ISSUER) {
+        this.JWT_ISSUER = JWT_ISSUER;
+    }
+
+    @Autowired
+    private void setJwt(ValidacionJWT jwt) {
+        this.jwt = jwt;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
+
     @Override
     public ResponseEntity execute() {
         JsonObject responseJson = new JsonObject();
@@ -26,7 +54,7 @@ public class ValidacionAuth extends QueryAuth<ResponseEntity> {
                             respuesta = new Respuesta(0, "Correcto");
                             return ResponseEntity.status(200).body(respuesta.toString());
 
-                        }else {
+                        } else {
                             throw new Exception();
                         }
                     } catch (Exception e) {
@@ -42,8 +70,7 @@ public class ValidacionAuth extends QueryAuth<ResponseEntity> {
                 }
             }
 
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             respuesta = new Respuesta(-1, "Servicio no autorizado, inexistente o petición inválida");
             return ResponseEntity.status(401).body(respuesta.toString());
 

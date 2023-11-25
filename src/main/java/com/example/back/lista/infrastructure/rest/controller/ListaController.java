@@ -1,5 +1,6 @@
 package com.example.back.lista.infrastructure.rest.controller;
 
+import com.example.back.auth.application.query.ValidacionAuth;
 import com.example.back.lista.application.command.*;
 import com.example.back.lista.application.query.BuscarPorNombreLista;
 import com.example.back.lista.application.query.ListarLista;
@@ -52,77 +53,99 @@ public class ListaController {
     @Autowired
     private ListaMapper listaMapper;
 
+    @Autowired
+    private ValidacionAuth validacionAuth;
+
     @GetMapping(value = "", produces = "application/json")
-    public Mono<ResponseEntity> listarTodos() {
-        listas = aListarLista()
-                .withRepo(listaEntRepository)
-                .build();
-        List<ListaDto> dtoList = listas.execute().stream().map(listaEnt -> listaMapper.toDto(listaEnt)).toList();
-        return Mono.just(ResponseEntity.status(200).body(dtoList));
+    public Mono<ResponseEntity> listarTodos(@RequestHeader("Authorization") String auth) {
+        validacionAuth.setAuth(auth);
+        ResponseEntity responseEntity = validacionAuth.execute();
+        if (responseEntity.getStatusCode().value() == 200) {
+            listas = aListarLista()
+                    .withRepo(listaEntRepository)
+                    .build();
+            List<ListaDto> dtoList = listas.execute().stream().map(listaEnt -> listaMapper.toDto(listaEnt)).toList();
+            return Mono.just(ResponseEntity.status(200).body(dtoList));
+        } else
+            return Mono.just(responseEntity);
     }
 
     @GetMapping(value = "/{listName}", produces = "application/json")
-    public Mono<ResponseEntity> buscarPorNombre(@PathVariable String listName) {
-        buscarPorNombreLista = aBuscarPorNombreLista()
-                .withData(listName)
-                .withRepo(listaEntRepository)
-                .build();
-        ListaEnt lista = buscarPorNombreLista.execute();
-        if (Objects.isNull(lista)) {
-            return Mono.just(ResponseEntity.status(404).body(null));
-        } else {
-            return Mono.just(ResponseEntity.status(200).body(listaMapper.toDto(lista)));
-        }
+    public Mono<ResponseEntity> buscarPorNombre(@RequestHeader("Authorization") String auth, @PathVariable String listName) {
+        validacionAuth.setAuth(auth);
+        ResponseEntity responseEntity = validacionAuth.execute();
+        if (responseEntity.getStatusCode().value() == 200) {
+            buscarPorNombreLista = aBuscarPorNombreLista()
+                    .withData(listName)
+                    .withRepo(listaEntRepository)
+                    .build();
+            ListaEnt lista = buscarPorNombreLista.execute();
+            if (Objects.isNull(lista)) {
+                return Mono.just(ResponseEntity.status(404).body(null));
+            } else {
+                return Mono.just(ResponseEntity.status(200).body(listaMapper.toDto(lista)));
+            }
+        } else
+            return Mono.just(responseEntity);
     }
 
     @PostMapping(value = "", produces = "application/json")
-    public Mono<ResponseEntity> guardarLista(@Valid @RequestBody ListaDto listaDto) {
-        ListaEnt listaEnt = listaMapper.toEntity(listaDto);
-        guardarLista = aGuardarLista()
-                .withData(listaEnt)
-                .withRepo(listaEntRepository)
-                .build();
-        ListaEnt lista = guardarLista.execute();
-        if (Objects.isNull(lista)) {
-            return Mono.just(ResponseEntity.status(304).body(listaMapper.toDto(lista)));
-        } else {
-            listaEnt.getListaCancionEnts().forEach(listaCancionEnt -> {
-                guardarListaCancion = aGuardarListaCancion()
-                        .withData(listaCancionEnt)
-                        .withRepo(listaCancionEntRepository)
-                        .build();
-                guardarCancion = aGuardarCancion()
-                        .withData(listaCancionEnt.getCancionEnt())
-                        .withRepo(cancionEntRepository)
-                        .build();
-                CancionEnt cancionEnt = guardarCancion.execute();
-                ListaCancionEnt listaCancionEnt1 = guardarListaCancion.execute();
-            });
-            return Mono.just(ResponseEntity.status(201).body(listaMapper.toDto(lista)));
-        }
+    public Mono<ResponseEntity> guardarLista(@RequestHeader("Authorization") String auth, @Valid @RequestBody ListaDto listaDto) {
+        validacionAuth.setAuth(auth);
+        ResponseEntity responseEntity = validacionAuth.execute();
+        if (responseEntity.getStatusCode().value() == 200) {
+            ListaEnt listaEnt = listaMapper.toEntity(listaDto);
+            guardarLista = aGuardarLista()
+                    .withData(listaEnt)
+                    .withRepo(listaEntRepository)
+                    .build();
+            ListaEnt lista = guardarLista.execute();
+            if (Objects.isNull(lista)) {
+                return Mono.just(ResponseEntity.status(304).body(listaMapper.toDto(lista)));
+            } else {
+                listaEnt.getListaCancionEnts().forEach(listaCancionEnt -> {
+                    guardarListaCancion = aGuardarListaCancion()
+                            .withData(listaCancionEnt)
+                            .withRepo(listaCancionEntRepository)
+                            .build();
+                    guardarCancion = aGuardarCancion()
+                            .withData(listaCancionEnt.getCancionEnt())
+                            .withRepo(cancionEntRepository)
+                            .build();
+                    CancionEnt cancionEnt = guardarCancion.execute();
+                    ListaCancionEnt listaCancionEnt1 = guardarListaCancion.execute();
+                });
+                return Mono.just(ResponseEntity.status(201).body(listaMapper.toDto(lista)));
+            }
+        } else
+            return Mono.just(responseEntity);
     }
 
     @DeleteMapping(value = "/{listName}", produces = "application/json")
-    public Mono<ResponseEntity> eliminarPorNombre(@PathVariable String listName) {
-        buscarPorNombreLista = aBuscarPorNombreLista()
-                .withData(listName)
-                .withRepo(listaEntRepository)
-                .build();
-        ListaEnt listaEnt = buscarPorNombreLista.execute();
-        if (!Objects.isNull(listaEnt)) {
-
-            eliminarPorIdLista = anEliminarPorIdLista()
-                    .withData(listaEnt.getIdLista())
+    public Mono<ResponseEntity> eliminarPorNombre(@RequestHeader("Authorization") String auth, @PathVariable String listName) {
+        validacionAuth.setAuth(auth);
+        ResponseEntity responseEntity = validacionAuth.execute();
+        if (responseEntity.getStatusCode().value() == 200) {
+            buscarPorNombreLista = aBuscarPorNombreLista()
+                    .withData(listName)
                     .withRepo(listaEntRepository)
                     .build();
-            if (Boolean.TRUE.equals(eliminarPorIdLista.execute())) {
-                return Mono.just(ResponseEntity.status(204).body(true));
+            ListaEnt listaEnt = buscarPorNombreLista.execute();
+            if (!Objects.isNull(listaEnt)) {
+
+                eliminarPorIdLista = anEliminarPorIdLista()
+                        .withData(listaEnt.getIdLista())
+                        .withRepo(listaEntRepository)
+                        .build();
+                if (Boolean.TRUE.equals(eliminarPorIdLista.execute())) {
+                    return Mono.just(ResponseEntity.status(204).body(true));
+                } else {
+                    return Mono.just(ResponseEntity.status(404).body(false));
+                }
             } else {
                 return Mono.just(ResponseEntity.status(404).body(false));
             }
-        } else {
-            return Mono.just(ResponseEntity.status(404).body(false));
-        }
-
+        } else
+            return Mono.just(responseEntity);
     }
 }
