@@ -10,5 +10,5 @@ public interface UsuariosLoginRepository extends UsuariosLoginRepo<UsuariosLogin
 
     @Override
     @Query(value = "SELECT ID_USUARIO FROM USUARIOS_LOGIN WHERE USUARIO = ?1 AND CONTRASENA = ?2", nativeQuery = true)
-    public int comprobarUsuarioContrasena(String usuario, String contrasena);
+    public Integer comprobarUsuarioContrasena(String usuario, String contrasena);
 }

@@ -6,5 +6,5 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface UsuariosLoginRepo <T, ID> extends JpaRepository<T, ID> {
 
-    public int comprobarUsuarioContrasena(String usuario, String contrasena);
+    public Integer comprobarUsuarioContrasena(String usuario, String contrasena);
 }
