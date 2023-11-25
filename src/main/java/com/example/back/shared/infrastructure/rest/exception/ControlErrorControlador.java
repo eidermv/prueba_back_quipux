@@ -1,4 +1,4 @@
-package com.example.back.lista.infrastructure.rest.exception;
+package com.example.back.shared.infrastructure.rest.exception;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
