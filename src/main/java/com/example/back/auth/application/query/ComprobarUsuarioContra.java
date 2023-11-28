@@ -4,6 +4,7 @@ import com.example.back.auth.domain.model.Respuesta;
 import com.example.back.auth.domain.model.UsuariosLogin;
 import com.example.back.auth.domain.repository.UsuariosLoginRepo;
 import com.example.back.shared.application.ValidacionJWT;
+import com.example.back.shared.application.ValidacionRSA;
 import io.vertx.core.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,11 +62,16 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
                             JsonObject aux = new JsonObject();
                             String jwtStr = jwt.createJWT("Quipux-Web", finalJwtIdCode, JWT_ISSUER, payload,
                                     "Prueba", lifespan);
+                            String temp = rsa.cifrar(String.valueOf(idUsuario));
+                            String nuevaClave = rsa.getClave();
+                            usuariosLogin.setContrasena(nuevaClave);
                             aux.put("mensaje", "Token privado generado");
                             aux.put("key", jwtStr);
+                            aux.put("data", usuariosLogin);
                             aux.put("error", 0);
+                            repo.guardarTemp(String.valueOf(idUsuario), temp);
 
-                            return ResponseEntity.status(401).body(aux.toString());
+                            return ResponseEntity.status(200).body(aux.toString());
                         }
 
 
@@ -79,6 +85,52 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
                         respuesta = new Respuesta(401, "Sin datos de autenticación");
                         return ResponseEntity.status(401).body(respuesta.toString());
                     }
+                }
+                case "Refresh" -> {
+                    if (authStr.length > 1) {
+                        authStr[1] = new String(b64dec.decode(authStr[1].getBytes("UTF-8")), "UTF-8");
+
+                        JsonObject usuario = new JsonObject(authStr[1]);
+
+                        int idUsuario = usuario.getInteger("idUsuario");
+                        String temp = repo.obtenerTemp(idUsuario);
+
+                        String privada = usuario.getString("contrasena");
+                        String usuarioR = usuario.getString("usuario");
+
+                        if (rsa.comprobar(String.valueOf(idUsuario), temp, privada)) {
+                            String jwtIdCode = "sys_quipux:" + Long.toString(System.currentTimeMillis());
+
+                            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+                            digest.reset();
+                            digest.update(jwtIdCode.getBytes("utf8"));
+
+                            jwtIdCode = JWT_ID_HEADER + String.format("%040X", new BigInteger(1, digest.digest()));
+
+
+                            String finalJwtIdCode = jwtIdCode;
+                            int lifespan = 129600000;
+                            UsuariosLogin usuariosLogin = new UsuariosLogin();
+                            usuariosLogin.setIdUsuario(idUsuario);
+                            usuariosLogin.setUsuario(usuarioR);
+                            usuariosLogin.setContrasena(privada);
+                            String payload = usuariosLogin.toString();
+                            JsonObject aux = new JsonObject();
+                            String jwtStr = jwt.createJWT("Quipux-Web", finalJwtIdCode, JWT_ISSUER, payload,
+                                    "Prueba", lifespan);
+
+                            aux.put("mensaje", "Token actualizado");
+                            aux.put("key", jwtStr);
+                            aux.put("data", usuariosLogin);
+                            aux.put("error", 0);
+                            return ResponseEntity.status(200).body(aux.toString());
+                        }
+                        respuesta = new Respuesta(401, "Contexto de seguridad no autorizado");
+                        return ResponseEntity.status(401).body(respuesta.toString());
+
+                    }
+                    respuesta = new Respuesta(401, "Contexto de seguridad no autorizado");
+                    return ResponseEntity.status(401).body(respuesta.toString());
                 }
                 default -> {
                     respuesta = new Respuesta(401, "Contexto de seguridad no autorizado");
@@ -103,6 +155,7 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
         private static String JWT_ISSUER;
         private static String JWT_ID_HEADER;
         private static ValidacionJWT jwt;
+        private static ValidacionRSA rsa;
 
         public ComprobarUsuarioContraBuilder() {
 
@@ -121,6 +174,11 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
         @Autowired
         private void setJwt(ValidacionJWT jwt) {
             this.jwt = jwt;
+        }
+
+        @Autowired
+        private void setRsa(ValidacionRSA rsa) {
+            this.rsa = rsa;
         }
 
         public static ComprobarUsuarioContraBuilder aComprobarUsuarioContra() {
@@ -144,6 +202,7 @@ public class ComprobarUsuarioContra extends QueryAuth<ResponseEntity> {
             comprobarUsuarioContra.auth = this.auth;
             comprobarUsuarioContra.repo = this.repo;
             comprobarUsuarioContra.jwt = this.jwt;
+            comprobarUsuarioContra.rsa = this.rsa;
             return comprobarUsuarioContra;
         }
     }

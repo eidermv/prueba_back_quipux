@@ -1,6 +1,5 @@
 package com.example.back.auth.infrastructure.db.entity;
 
-import com.example.back.auth.domain.model.UsuariosLogin;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,5 +17,7 @@ public class UsuariosLoginEnt {
 
     private String usuario;
     private String contrasena;
+    @Column(length = 3000)
+    private String temp;
 
 }

@@ -33,6 +33,7 @@ import static com.example.back.lista.application.query.ListarLista.ListarListaBu
 
 @RestController
 @RequestMapping("lists")
+@CrossOrigin(origins = {"http://localhost:4200"})
 public class ListaController {
 
     @Autowired

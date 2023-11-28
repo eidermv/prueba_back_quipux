@@ -2,6 +2,7 @@ CREATE TABLE USUARIOS_LOGIN (
                                        ID_USUARIO INTEGER NOT NULL AUTO_INCREMENT,
                                        USUARIO VARCHAR(100) NOT NULL,
                                        CONTRASENA VARCHAR(100) NOT NULL,
+                                       TEMP VARCHAR(3000),
                                        CONSTRAINT USUARIOS_LOGIN_PK PRIMARY KEY (ID_USUARIO)
 );
 

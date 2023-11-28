@@ -7,4 +7,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 public interface UsuariosLoginRepo <T, ID> extends JpaRepository<T, ID> {
 
     public Integer comprobarUsuarioContrasena(String usuario, String contrasena);
+    int guardarTemp(String idUsuario, String temp);
+    String obtenerTemp(int idUsuario);
 }

@@ -1,14 +1,22 @@
 package com.example.back.auth.domain.model;
 
-import com.example.back.lista.domain.model.ListaCancion;
+import io.vertx.core.json.JsonObject;
 
-import java.util.Set;
-
-public class UsuariosLogin {
+public class UsuariosLogin{
 
     private int idUsuario;
     private String usuario;
     private String contrasena;
+    private String temp;
+    private JsonObject jsonObject;
+
+    public String getTemp() {
+        return temp;
+    }
+
+    public void setTemp(String temp) {
+        this.temp = temp;
+    }
 
     public int getIdUsuario() {
         return idUsuario;
@@ -32,5 +40,14 @@ public class UsuariosLogin {
 
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
+    }
+
+    @Override
+    public String toString() {
+        this.jsonObject = new JsonObject()
+                .put("idUsuario", this.idUsuario)
+                .put("usuario", this.usuario)
+                .put("contrasena", this.contrasena);
+        return this.jsonObject.toString();
     }
 }
